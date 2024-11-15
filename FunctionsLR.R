@@ -129,3 +129,11 @@ objective_fun<-function(beta,X,y,lambda){
   #y_fit<-apply(P,1,FUN= "which.max")-1 is slower
   return(list(objective_value=objective_value,error=error))
 }
+
+#Soft threesolding function
+soft_max<-function(X,beta){
+  z <- X %*% beta
+  exp_values <- exp(z)
+  P <- exp_values / rowSums(exp_values)
+  return(P)
+}
