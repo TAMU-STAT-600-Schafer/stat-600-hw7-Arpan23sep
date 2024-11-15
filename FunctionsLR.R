@@ -96,7 +96,14 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
       #beta_new[, j] <- beta_old[, j] - eta * solve(crossprod(X, w * X) + lambda * I) %*% (crossprod(X, P[, j] - indicator_mat[, j]) + lambda * beta_old[, j])
     }
   # Within one iteration: perform the update, calculate updated objective function and training/testing errors in %
-  
+    #Calculating errors
+    error_train[i+1]<-objective_fun(beta_new,X,y,lambda)$error
+    error_test[i+1]<-objective_fun(beta_new,Xt,yt,lambda)$error
+    objective[i+1]<-objective_fun(beta_new,X,y,lambda)$objective_value
+    
+    beta_old<-beta_new
+    #if (i %% 10 == 0) print(paste0("Iter=", i))
+  }
   
   ## Return output
   ##########################################################################
