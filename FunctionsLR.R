@@ -67,7 +67,9 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   objective<-array(0,dim=numIter + 1)
   ## Calculate corresponding pk, objective value f(beta_init), training error and testing error given the starting point beta_init
   ##########################################################################
-  
+  error_train[1]<-objective_fun(beta_init,X,y,lambda)$error
+  error_test[1]<-objective_fun(beta_init,Xt,yt,lambda)$error
+  objective[1]<-objective_fun(beta_init,X,y,lambda)$objective_value
   ## Newton's method cycle - implement the update EXACTLY numIter iterations
   ##########################################################################
  
