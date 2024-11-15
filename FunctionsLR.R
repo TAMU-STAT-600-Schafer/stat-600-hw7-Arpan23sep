@@ -20,19 +20,47 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   ## Check the supplied parameters as described. You can assume that X, Xt are matrices; y, yt are vectors; and numIter, eta, lambda are scalars. You can assume that beta_init is either NULL (default) or a matrix.
   ###################################
   # Check that the first column of X and Xt are 1s, if not - display appropriate message and stop execution.
-  
+  if(all(X[, 1] == 1) && all(Xt[, 1] == 1)){
+  } else {
+    stop("First column of X and Xt are not ones:Please check!")
+  }
   # Check for compatibility of dimensions between X and Y
-  
+  if(nrow(X) == length(y)){
+  } else {
+    stop("Dimension of X and Y are not compatible,PLease check!")
+  }
   # Check for compatibility of dimensions between Xt and Yt
-  
+  if(nrow(Xt) == length(yt)){
+  } else {
+    stop("Dimension of Xt and yt are not compatible,PLease check!")
+  }
   # Check for compatibility of dimensions between X and Xt
-  
+  if(ncol(X) == ncol(Xt)){
+  } else {
+    stop("Dimension of X and Xt are not compatible,PLease check!")
+  }
   # Check eta is positive
-  
+  if(eta >0){
+  } else {
+    stop("Eta is not positive:Check!")
+  }
   # Check lambda is non-negative
-  
+  if(lambda >= 0){
+  } else {
+    stop("Lambda is negative:Check!")
+  }
   # Check whether beta_init is NULL. If NULL, initialize beta with p x K matrix of zeroes. If not NULL, check for compatibility of dimensions with what has been already supplied.
+  n<-nrow(X)
+  p<-ncol(X)
+  K<-length(unique(y))
   
+  if(is.null(beta_init)){
+    beta_init<-matrix(0,nrow = p,ncol = K)
+  } else {
+    if(nrow(beta_init)!=p || ncol(beta_init)!=K){
+      stop("dimensions of beta_initial are not suitable.Please check!")
+    }
+  }
   ## Calculate corresponding pk, objective value f(beta_init), training error and testing error given the starting point beta_init
   ##########################################################################
   
