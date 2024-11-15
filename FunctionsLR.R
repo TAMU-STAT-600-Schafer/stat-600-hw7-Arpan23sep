@@ -61,6 +61,10 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
       stop("dimensions of beta_initial are not suitable.Please check!")
     }
   }
+  #Initialsation of train/test/object value arrays
+  error_train<-array(0,dim=numIter + 1)
+  error_test<-array(0,dim=numIter + 1)
+  objective<-array(0,dim=numIter + 1)
   ## Calculate corresponding pk, objective value f(beta_init), training error and testing error given the starting point beta_init
   ##########################################################################
   
