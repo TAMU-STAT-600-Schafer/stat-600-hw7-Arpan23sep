@@ -104,6 +104,7 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
     beta_old<-beta_new
     #if (i %% 10 == 0) print(paste0("Iter=", i))
   }
+  beta<-beta_new
   
   ## Return output
   ##########################################################################
@@ -112,4 +113,19 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   # error_test - (numIter + 1) length vector of testing error % at each iteration (+ starting value)
   # objective - (numIter + 1) length vector of objective values of the function that we are minimizing at each iteration (+ starting value)
   return(list(beta = beta, error_train = error_train, error_test = error_test, objective =  objective))
+}
+
+#Function to calculate objective value & errors
+objective_fun<-function(beta,X,y,lambda){
+  K<-length(unique(y))
+  n<-nrow(X)
+  epsilon<-1e-15
+  P<-soft_max(X,beta)
+  indicator_mat= matrix(0, n, K)
+  indicator_mat[cbind(1:n, y + 1)] = 1
+  objective1<-sum(indicator_mat * log(P+epsilon)) 
+  objective_value<-(-objective1)+(lambda/2) * (sum(beta^2))
+  error<-100 * sum(max.col(P) - y != 1) / length(y)
+  #y_fit<-apply(P,1,FUN= "which.max")-1 is slower
+  return(list(objective_value=objective_value,error=error))
 }
