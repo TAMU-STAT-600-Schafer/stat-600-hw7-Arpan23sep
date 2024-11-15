@@ -72,7 +72,29 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   objective[1]<-objective_fun(beta_init,X,y,lambda)$objective_value
   ## Newton's method cycle - implement the update EXACTLY numIter iterations
   ##########################################################################
- 
+  #Initial beta vector/indicator matrix
+  beta_old<-beta_init
+  beta_new<-beta_init
+  indicator_mat= matrix(0, n, K)
+  indicator_mat[cbind(1:n, y + 1)] = 1
+  #indicator_mat<-sapply(0:(K-1),function(j) as.integer(y==j)) is slower than previous simple one
+  for(i in 1:numIter){
+    # Within one iteration: perform the update, calculate updated objective function and training/testing errors in %
+    P<-soft_max(X,beta_old)  
+    I<-diag(p)  
+    
+    for(j in 1:K){
+      P_j<-P[,j]
+      w<-P_j*(1-P_j)
+      beta_new[,j]<-beta_old[,j] - eta * (solve(t(X) %*% (w * X) +lambda * I)) %*% (t(X) %*% (P[,j]-indicator_mat[,j]) + lambda* beta_old[,j]) 
+      
+      #These functions are relatively slower
+      #w<-P[,j]*(1-P[,j])
+      #W<-diag(as.vector(w))
+      #beta_new[, j] <- beta_old[, j] - eta * (solve(t(X) %*% sweep(X, 1, w, "*") + lambda * diag(p))) %*% (t(X) %*% (P[, j] - indicator_mat[, j]) + lambda * beta_old[, j])
+      #beta_new[,j]<-beta_old[,j] - eta * (solve(t(X) %*% (w * X) +lambda * I)) %*% (t(X) %*% (P[,j]-indicator_mat[,j]) + lambda* beta_old[,j]) 
+      #beta_new[, j] <- beta_old[, j] - eta * solve(crossprod(X, w * X) + lambda * I) %*% (crossprod(X, P[, j] - indicator_mat[, j]) + lambda * beta_old[, j])
+    }
   # Within one iteration: perform the update, calculate updated objective function and training/testing errors in %
   
   
