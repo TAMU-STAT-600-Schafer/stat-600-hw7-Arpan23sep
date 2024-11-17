@@ -7,9 +7,13 @@
 # seed - specified seed to use before random normal draws
 initialize_bw <- function(p, hidden_p, K, scale = 1e-3, seed = 12345){
   # [ToDo] Initialize intercepts as zeros
-  
+  b1 <- rep(0, hidden_p)
+  b2 <- rep(0,K)
   # [ToDo] Initialize weights by drawing them iid from Normal
   # with mean zero and scale as sd
+  set.seed(seed)
+  W1 <- matrix(rnorm(p * hidden_p, mean = 0, sd = scale), nrow = p, ncol = hidden_p) # Input to hidden layer weights
+  W2 <- matrix(rnorm(hidden_p * K, mean = 0, sd = scale), nrow = hidden_p, ncol = K) # Hidden to output layer weights
   
   # Return
   return(list(b1 = b1, b2 = b2, W1 = W1, W2 = W2))
@@ -22,18 +26,24 @@ initialize_bw <- function(p, hidden_p, K, scale = 1e-3, seed = 12345){
 # y - a vector of size n of class labels, from 0 to K-1
 # K - number of classes
 loss_grad_scores <- function(y, scores, K){
-  
+  # Number of samples
+  n <- length(y)
   # [ToDo] Calculate loss when lambda = 0
   # loss = ...
-  
+  loss <- -sum(log(prob[cbind(1:n, y + 1)])) / n 
   # [ToDo] Calculate misclassification error rate (%)
   # when predicting class labels using scores versus true y
   # error = ...
-  
+  pred_labels <- apply(scores, 1, which.max) - 1  # Subtract 1 for 0-based labels
+  error <- mean(pred_labels != y) * 100
   # [ToDo] Calculate gradient of loss with respect to scores (output)
   # when lambda = 0
   # grad = ...
-  
+  exp_scores <- exp(scores)
+  prob <- exp_scores / rowSums(exp_scores)
+  grad <- prob
+  grad[cbind(1:n, y + 1)] <- grad[cbind(1:n, y + 1)] - 1  # Subtract 1 from the correct class probabilities
+  grad <- grad / n
   # Return loss, gradient and misclassification error on training (in %)
   return(list(loss = loss, grad = grad, error = error))
 }
@@ -48,18 +58,18 @@ loss_grad_scores <- function(y, scores, K){
 # b2 - a vector of size K of intercepts
 # lambda - a non-negative scalar, ridge parameter for gradient calculations
 one_pass <- function(X, y, K, W1, b1, W2, b2, lambda){
-
+  
   # [To Do] Forward pass
   # From input to hidden 
   
   # ReLU
   
   # From hidden to output scores
- 
+  
   
   # [ToDo] Backward pass
   # Get loss, error, gradient at current scores using loss_grad_scores function
-
+  
   # Get gradient for 2nd layer W2, b2 (use lambda as needed)
   
   # Get gradient for hidden, and 1st layer W1, b1 (use lambda as needed)
@@ -106,7 +116,7 @@ NN_train <- function(X, y, Xval, yval, lambda = 0.01,
   # Get sample size and total number of batches
   n = length(y)
   nBatch = floor(n/mbatch)
-
+  
   # [ToDo] Initialize b1, b2, W1, W2 using initialize_bw with seed as seed,
   # and determine any necessary inputs from supplied ones
   
