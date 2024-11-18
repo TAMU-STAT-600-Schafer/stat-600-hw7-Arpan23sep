@@ -32,7 +32,8 @@ loss_grad_scores <- function(y, scores, K){
   # changing the class label to 1:K
   y <- y + 1
   
-  # Calculating P_K - n x k matrix with each row p_k(x_i), k = 0, ..., K-1
+  # P_K calculation 
+  #n x k matrix with each row p_k(x_i), k = 0, ..., K-1
   mat_exp <- exp(scores)
   P_K <- mat_exp/ rowSums(mat_exp)
   
@@ -76,24 +77,27 @@ one_pass <- function(X, y, K, W1, b1, W2, b2, lambda){
   p <- ncol(X)
   # [To Do] Forward pass
   # From input to hidden 
-  A1 <- X %*% W1 + matrix(b1, n, h, byrow = T)
+  A1 <- X %*% W1 + matrix(b1, n, h, byrow = T)         #A1 is of dimension n * h
+  
   # ReLU
   H <- pmax(A1, 0)
   # From hidden to output scores
-  scores <- H %*% W2 + matrix(b2, n, K, byrow = T)
+  scores <- H %*% W2 + matrix(b2, n, K, byrow = T)    #score is of dimension n * K
   
   # [ToDo] Backward pass
   # Get loss, error, gradient at current scores using loss_grad_scores function
-  out <- loss_grad_scores(y, scores, K)
-  out_grad <- out$grad # n x K matrix
+  lgs <- loss_grad_scores(y, scores, K)
+  lgs_grad <- lgs$grad 
+  
   # Get gradient for 2nd layer W2, b2 (use lambda as needed)
-  dW2 <- crossprod(H, out_grad) + lambda * W2 # h x K matrix
-  db2 <- colSums(out_grad) # vector of length K
+  dW2 <- crossprod(H, lgs_grad) + lambda * W2 
+  db2 <- colSums(lgs_grad) 
+  
   # Get gradient for hidden, and 1st layer W1, b1 (use lambda as needed)
-  dH <- tcrossprod(out_grad, W2) # n x h matrix
-  dA1 <- dH * (A1 > 0) # I(A>0) # n x h matrix
-  dW1 <- crossprod(X, dA1) + lambda * W1 # p x h matrix
-  db1 <- colSums(dA1) # vector of length h
+  dH <- tcrossprod(lgs_grad, W2) 
+  dA1 <- dH * (A1 > 0) 
+  dW1 <- crossprod(X, dA1) + lambda * W1 
+  db1 <- colSums(dA1) 
   # Return output (loss and error from forward pass,
   # list of gradients from backward pass)
   return(list(loss = out$loss, error = out$error, grads = list(dW1 = dW1, db1 = db1, dW2 = dW2, db2 = db2)))
@@ -108,10 +112,23 @@ one_pass <- function(X, y, K, W1, b1, W2, b2, lambda){
 # W2 - a h by K matrix of weights
 # b2 - a vector of size K of intercepts
 evaluate_error <- function(Xval, yval, W1, b1, W2, b2){
+  #Dimension extraction
+  nval <- length(yval)
+  yval <- yval + 1
   # [ToDo] Forward pass to get scores on validation data
+  #First pass from input to hidden
+  A1 <- Xval %*% W1 + matrix(b1, nval, length(b1), byrow = T)
+  H <- pmax(A1, 0)
   
+  #Scores calculation
+  scores <- H %*% W2 + matrix(b2, nval, length(b2), byrow = T)
+  
+  #P_k calculation
+  mat_exp <- exp(scores)
+  P_K <- mat_exp/ rowSums(mat_exp)
   # [ToDo] Evaluate error rate (in %) when 
   # comparing scores-based predictions with true yval
+  error <- 100 * (sum(yval != max.col(P_K, ties.method = "first")) / nval)
   
   return(error)
 }
