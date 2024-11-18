@@ -100,7 +100,7 @@ one_pass <- function(X, y, K, W1, b1, W2, b2, lambda){
   db1 <- colSums(dA1) 
   # Return output (loss and error from forward pass,
   # list of gradients from backward pass)
-  return(list(loss = out$loss, error = out$error, grads = list(dW1 = dW1, db1 = db1, dW2 = dW2, db2 = db2)))
+  return(list(loss = lgs$loss, error = lgs$error, grads = list(dW1 = dW1, db1 = db1, dW2 = dW2, db2 = db2)))
 }
 
 # Function to evaluate validation set error
@@ -154,9 +154,17 @@ NN_train <- function(X, y, Xval, yval, lambda = 0.01,
   n = length(y)
   nBatch = floor(n/mbatch)
   
+  #Dimension extraction
+  K <- max(y) + 1
+  p <- ncol(X)
+  
   # [ToDo] Initialize b1, b2, W1, W2 using initialize_bw with seed as seed,
   # and determine any necessary inputs from supplied ones
-  
+  initial <- initialize_bw(p, hidden_p, K, scale, seed)
+  b1 <- initial$b1
+  b2 <- initial$b2
+  W1 <- initial$W1
+  W2 <- initial$W2
   # Initialize storage for error to monitor convergence
   error = rep(NA, nEpoch)
   error_val = rep(NA, nEpoch)
@@ -170,10 +178,25 @@ NN_train <- function(X, y, Xval, yval, lambda = 0.01,
     # [ToDo] For each batch
     #  - do one_pass to determine current error and gradients
     #  - perform SGD step to update the weights and intercepts
-    
+    error_now <- 0
+    for (j in 1:nBatch) {
+      # Get error and gradient on the batch
+      first_pass <- one_pass(X[batchids == j, ], y[batchids == j], K, W1, b1, W2, b2, lambda)
+      
+      # Keep track of error
+      error_now <- error_now + first_pass$error
+      
+      # update of W1, b1, W2, b2
+      W1 <- W1 - rate * first_pass$grads$dW1
+      W2 <- W2 - rate * first_pass$grads$dW2
+      b1 <- b1 - rate * first_pass$grads$db1
+      b2 <- b2 - rate * first_pass$grads$db2
+    }
     # [ToDo] In the end of epoch, evaluate
     # - average training error across batches
+    error[i] <- error_now / nBatch
     # - validation error using evaluate_error function
+    error_val[i] <- evaluate_error(Xval, yval, W1, b1, W2, b2)
   }
   # Return end result
   return(list(error = error, error_val = error_val, params =  list(W1 = W1, b1 = b1, W2 = W2, b2 = b2)))
