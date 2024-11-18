@@ -26,24 +26,36 @@ initialize_bw <- function(p, hidden_p, K, scale = 1e-3, seed = 12345){
 # y - a vector of size n of class labels, from 0 to K-1
 # K - number of classes
 loss_grad_scores <- function(y, scores, K){
-  # Number of samples
+  # Extracting dimension
   n <- length(y)
+  
+  # changing the class label to 1:K
+  y <- y + 1
+  
+  # Calculating P_K - n x k matrix with each row p_k(x_i), k = 0, ..., K-1
+  mat_exp <- exp(scores)
+  P_K <- mat_exp/ rowSums(mat_exp)
+  
+  # Creating a matrix with I(Y == k) as rows
+  Ymat <- 0 + outer(y, 1:K, function(a, b) a == b)
+  
   # [ToDo] Calculate loss when lambda = 0
-  # loss = ...
-  loss <- -sum(log(prob[cbind(1:n, y + 1)])) / n 
+  loss <- -sum(Ymat * log(P_K)) / n
+  
   # [ToDo] Calculate misclassification error rate (%)
   # when predicting class labels using scores versus true y
   # error = ...
-  pred_labels <- apply(scores, 1, which.max) - 1  # Subtract 1 for 0-based labels
-  error <- mean(pred_labels != y) * 100
+  error <- 100 * (sum(y != max.col(P_K, ties.method = "first")) / n)
+  #pred_labels <- apply(scores, 1, which.max) - 1  # Subtract 1 for 0-based labels
+  #error <- mean(pred_labels != y) * 100
+  
   # [ToDo] Calculate gradient of loss with respect to scores (output)
   # when lambda = 0
   # grad = ...
-  exp_scores <- exp(scores)
-  prob <- exp_scores / rowSums(exp_scores)
-  grad <- prob
-  grad[cbind(1:n, y + 1)] <- grad[cbind(1:n, y + 1)] - 1  # Subtract 1 from the correct class probabilities
-  grad <- grad / n
+  grad <- (-Ymat + P_K) / n
+  
+  #exp_scores <- exp(scores)
+  #prob <- exp_scores / rowSums(exp_scores)
   # Return loss, gradient and misclassification error on training (in %)
   return(list(loss = loss, grad = grad, error = error))
 }
@@ -58,22 +70,30 @@ loss_grad_scores <- function(y, scores, K){
 # b2 - a vector of size K of intercepts
 # lambda - a non-negative scalar, ridge parameter for gradient calculations
 one_pass <- function(X, y, K, W1, b1, W2, b2, lambda){
-  
+  # Extracting Dimensions
+  n <- length(y)
+  h <- length(b1)
+  p <- ncol(X)
   # [To Do] Forward pass
   # From input to hidden 
-  
+  A1 <- X %*% W1 + matrix(b1, n, h, byrow = T)
   # ReLU
-  
+  H <- pmax(A1, 0)
   # From hidden to output scores
-  
+  scores <- H %*% W2 + matrix(b2, n, K, byrow = T)
   
   # [ToDo] Backward pass
   # Get loss, error, gradient at current scores using loss_grad_scores function
-  
+  out <- loss_grad_scores(y, scores, K)
+  out_grad <- out$grad # n x K matrix
   # Get gradient for 2nd layer W2, b2 (use lambda as needed)
-  
+  dW2 <- crossprod(H, out_grad) + lambda * W2 # h x K matrix
+  db2 <- colSums(out_grad) # vector of length K
   # Get gradient for hidden, and 1st layer W1, b1 (use lambda as needed)
-  
+  dH <- tcrossprod(out_grad, W2) # n x h matrix
+  dA1 <- dH * (A1 > 0) # I(A>0) # n x h matrix
+  dW1 <- crossprod(X, dA1) + lambda * W1 # p x h matrix
+  db1 <- colSums(dA1) # vector of length h
   # Return output (loss and error from forward pass,
   # list of gradients from backward pass)
   return(list(loss = out$loss, error = out$error, grads = list(dW1 = dW1, db1 = db1, dW2 = dW2, db2 = db2)))
