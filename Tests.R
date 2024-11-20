@@ -64,3 +64,25 @@ lines(1:length(out2$error_val), out2$error_val, col = "red")
 # Evaluate error on testing data
 test_error = evaluate_error(Xt, Yt, out2$params$W1, out2$params$b1, out2$params$W2, out2$params$b2)
 test_error # 14.9944--more error
+
+#Changing lambda to 0.005 & rate to 0.06 ,error becomes 15.77778----------------------------------------
+out2 = NN_train(Xtrain, Ytrain, Xval, Yval, lambda = 0.0005,
+                rate = 0.06, mbatch = 100, nEpoch = 300,
+                hidden_p = 400, scale = 1e-3, seed = 12345)
+plot(1:length(out2$error), out2$error, ylim = c(0, 70))
+lines(1:length(out2$error_val), out2$error_val, col = "red")
+
+# Evaluate error on testing data
+test_error = evaluate_error(Xt, Yt, out2$params$W1, out2$params$b1, out2$params$W2, out2$params$b2)
+test_error # 15.77778--more error
+
+#Changing nEpoch to 500 ,error becomes 14.17778----------------------------------------
+out2 = NN_train(Xtrain, Ytrain, Xval, Yval, lambda = 0.0005,
+                rate = 0.06, mbatch = 100, nEpoch = 500,
+                hidden_p = 400, scale = 1e-3, seed = 12345)
+plot(1:length(out2$error), out2$error, ylim = c(0, 70))
+lines(1:length(out2$error_val), out2$error_val, col = "red")
+
+# Evaluate error on testing data
+test_error = evaluate_error(Xt, Yt, out2$params$W1, out2$params$b1, out2$params$W2, out2$params$b2)
+test_error # 14.17778--less error
