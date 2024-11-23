@@ -1,88 +1,78 @@
-# Training data
-letter_train <- read.table("Data/letter-train.txt", header = F, colClasses = "numeric")
-Y <- letter_train[, 1]
-X <- as.matrix(letter_train[, -1])
+library(ggplot2)
 
-# Update training to set last part as validation
-id_val = 1801:2000
-Yval = Y[id_val]
-Xval = X[id_val, ]
-Ytrain = Y[-id_val]
-Xtrain = X[-id_val, ]
+# Initialize the parameters
+set.seed(50)   #Seed fixing
+n_train <- 500  # Number of training samples
+n_val <- 200    # Number of testing samples
+p <- 10         # Number of input features
+K <- 3          # Number of classes
+hidden_p <- 20  # Size of hidden layer
+scale <- 1e-3   # Scale for weight initialization
+lambda <- 0.01  # Regularization parameter
+rate <- 0.01    # Learning rate
+mbatch <- 50    # Batch size for SGD
+nEpoch <- 50    # Number of epochs
+
+# training data
+X_train <- matrix(rnorm(n_train * p), nrow = n_train, ncol = p)
+y_train <- sample(0:(K - 1), n_train, replace = TRUE)
 
 # Testing data
-letter_test <- read.table("Data/letter-test.txt", header = F, colClasses = "numeric")
-Yt <- letter_test[, 1]
-Xt <- as.matrix(letter_test[, -1])
+X_val <- matrix(rnorm(n_val * p), nrow = n_val, ncol = p)
+y_val <- sample(0:(K - 1), n_val, replace = TRUE)
 
-# Source the NN function
-source("FunctionsNN.R")
+# Training neural network
+result <- NN_train(X_train, y_train, X_val, y_val, 
+                   lambda = lambda, rate = rate, 
+                   mbatch = mbatch, nEpoch = nEpoch, 
+                   hidden_p = hidden_p, scale = scale)
 
-# [ToDo] Source the functions from HW3 (replace FunctionsLR.R with your working code)
-source("FunctionsLR.R")
+#training and testing errors
+train_error <- result$error
+val_error <- result$error_val
 
-# Recall the results of linear classifier from HW3
-# Add intercept column
-Xinter <- cbind(rep(1, nrow(Xtrain)), Xtrain)
-Xtinter <- cbind(rep(1, nrow(Xt)), Xt)
+# Plot the training and testing error over epochs
+df <- data.frame(Epoch = 1:nEpoch, 
+                 TrainingError = train_error, 
+                 ValidationError = val_error)
 
-#  Apply LR (note that here lambda is not on the same scale as in NN due to scaling by training size)
-out <- LRMultiClass(Xinter, Ytrain, Xtinter, Yt, lambda = 1, numIter = 150, eta = 0.1)
-plot(out$objective, type = 'o')
-plot(out$error_train, type = 'o') # around 19.5 if keep training
-plot(out$error_test, type = 'o') # around 25 if keep training
+# Plot using ggplot2
+ggplot(df, aes(x = Epoch)) +
+  geom_line(aes(y = TrainingError, color = "Training Error")) +
+  geom_line(aes(y = ValidationError, color = "Testing Error")) +
+  labs(title = "Training and Testing Error Over Epochs",
+       y = "Error (%)", x = "Epoch",
+       color = "Error Type") +
+  theme_minimal()
 
-#Changing rate to 0.09 & hidden parameter size to 500 ,error becomes 14.005------------------------
-out2 = NN_train(Xtrain, Ytrain, Xval, Yval, lambda = 0.0015,
-                rate = 0.09, mbatch = 50, nEpoch = 150,
-                hidden_p = 500, scale = 1e-3, seed = 12345)
-plot(1:length(out2$error), out2$error, ylim = c(0, 70))
-lines(1:length(out2$error_val), out2$error_val, col = "red")
+# Final validation accuracy
+final_test_error <- tail(val_error, 1)
+cat("Final Validation Error: ", final_test_error, "%\n")
 
-# Evaluate error on testing data
-test_error = evaluate_error(Xt, Yt, out2$params$W1, out2$params$b1, out2$params$W2, out2$params$b2)
-test_error # 14.005--less error
+#Changing the parameters
+result1 <- NN_train(X_train, y_train, X_val, y_val, 
+                   lambda = 0.03, rate = 0.02, 
+                   mbatch = 100, nEpoch = 50, 
+                   hidden_p = hidden_p, scale = scale)
 
-#Changing nEpoch to 500 & rate to 0.08 ,error becomes 12.777----------------------------------------
-out2 = NN_train(Xtrain, Ytrain, Xval, Yval, lambda = 0.0015,
-                rate = 0.08, mbatch = 50, nEpoch = 500,
-                hidden_p = 500, scale = 1e-3, seed = 12345)
-plot(1:length(out2$error), out2$error, ylim = c(0, 70))
-lines(1:length(out2$error_val), out2$error_val, col = "red")
+train_error <- result1$error
+val_error <- result$error_val
 
-# Evaluate error on testing data
-test_error = evaluate_error(Xt, Yt, out2$params$W1, out2$params$b1, out2$params$W2, out2$params$b2)
-test_error # 12.77778--less error
+# Plot the training and validation error over epochs
+df <- data.frame(Epoch = 1:nEpoch, 
+                 TrainingError = train_error, 
+                 ValidationError = val_error)
 
-#Changing hidden_p to 400 & nEpoch to 300 ,error becomes 14.9944----------------------------------------
-out2 = NN_train(Xtrain, Ytrain, Xval, Yval, lambda = 0.0015,
-                rate = 0.08, mbatch = 100, nEpoch = 300,
-                hidden_p = 400, scale = 1e-3, seed = 12345)
-plot(1:length(out2$error), out2$error, ylim = c(0, 70))
-lines(1:length(out2$error_val), out2$error_val, col = "red")
+# Plot using ggplot2
+ggplot(df, aes(x = Epoch)) +
+  geom_line(aes(y = TrainingError, color = "Training Error")) +
+  geom_line(aes(y = ValidationError, color = "Testing Error")) +
+  labs(title = "Training and Testing Error Over Epochs",
+       y = "Error (%)", x = "Epoch",
+       color = "Error Type") +
+  theme_minimal()
 
-# Evaluate error on testing data
-test_error = evaluate_error(Xt, Yt, out2$params$W1, out2$params$b1, out2$params$W2, out2$params$b2)
-test_error # 14.9944--more error
+# Final validation accuracy
+final_test_error <- tail(val_error, 1)
+cat("Final Validation Error: ", final_test_error, "%\n")
 
-#Changing lambda to 0.005 & rate to 0.06 ,error becomes 15.77778----------------------------------------
-out2 = NN_train(Xtrain, Ytrain, Xval, Yval, lambda = 0.0005,
-                rate = 0.06, mbatch = 100, nEpoch = 300,
-                hidden_p = 400, scale = 1e-3, seed = 12345)
-plot(1:length(out2$error), out2$error, ylim = c(0, 70))
-lines(1:length(out2$error_val), out2$error_val, col = "red")
-
-# Evaluate error on testing data
-test_error = evaluate_error(Xt, Yt, out2$params$W1, out2$params$b1, out2$params$W2, out2$params$b2)
-test_error # 15.77778--more error
-
-#Changing nEpoch to 500 ,error becomes 14.17778----------------------------------------
-out2 = NN_train(Xtrain, Ytrain, Xval, Yval, lambda = 0.0005,
-                rate = 0.06, mbatch = 100, nEpoch = 500,
-                hidden_p = 400, scale = 1e-3, seed = 12345)
-plot(1:length(out2$error), out2$error, ylim = c(0, 70))
-lines(1:length(out2$error_val), out2$error_val, col = "red")
-
-# Evaluate error on testing data
-test_error = evaluate_error(Xt, Yt, out2$params$W1, out2$params$b1, out2$params$W2, out2$params$b2)
-test_error # 14.17778--less error
