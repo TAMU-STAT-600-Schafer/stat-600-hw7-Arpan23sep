@@ -44,11 +44,12 @@ lines(1:length(out2$error_val), out2$error_val, col = "red")
 
 # Evaluate error on testing data
 test_error = evaluate_error(Xt, Yt, out2$params$W1, out2$params$b1, out2$params$W2, out2$params$b2)
-test_error # 16.1
+test_error # 15.68
 
 # [ToDo] Try changing the parameters above to obtain a better performance,
 # this will likely take several trials
 
+#I have tried many parameter tunning.I am reporting the significant ones---
 #Changing rate to 0.09 & hidden parameter size to 500 ,error becomes 14.005------------------------
 out2 = NN_train(Xtrain, Ytrain, Xval, Yval, lambda = 0.0015,
                 rate = 0.09, mbatch = 50, nEpoch = 150,
@@ -103,3 +104,103 @@ lines(1:length(out2$error_val), out2$error_val, col = "red")
 # Evaluate error on testing data
 test_error = evaluate_error(Xt, Yt, out2$params$W1, out2$params$b1, out2$params$W2, out2$params$b2)
 test_error # 14.17778--less error
+
+
+#Changing mbatch to 250 and lambda to 0.0004 error becomes 17.35----------------------------------------
+out2 = NN_train(Xtrain, Ytrain, Xval, Yval, lambda = 0.0004,
+                rate = 0.06, mbatch = 250, nEpoch = 500,
+                hidden_p = 400, scale = 1e-3, seed = 12345)
+plot(1:length(out2$error), out2$error, ylim = c(0, 70))
+lines(1:length(out2$error_val), out2$error_val, col = "red")
+
+# Evaluate error on testing data
+test_error = evaluate_error(Xt, Yt, out2$params$W1, out2$params$b1, out2$params$W2, out2$params$b2)
+test_error # 17.35--more error
+
+#Changing hidden_p to 100 and rate to 0.02 error becomes 24.51----------------------------------------
+out2 = NN_train(Xtrain, Ytrain, Xval, Yval, lambda = 0.0004,
+                rate = 0.02, mbatch = 250, nEpoch = 500,
+                hidden_p = 400, scale = 1e-3, seed = 12345)
+plot(1:length(out2$error), out2$error, ylim = c(0, 70))
+lines(1:length(out2$error_val), out2$error_val, col = "red")
+
+# Evaluate error on testing data
+test_error = evaluate_error(Xt, Yt, out2$params$W1, out2$params$b1, out2$params$W2, out2$params$b2)
+test_error # 24.51--more error
+
+#Changing nEpoch to 1000 and mbatch to 50 error becomes 12.511----------------------------------------
+out2 = NN_train(Xtrain, Ytrain, Xval, Yval, lambda = 0.0005,
+                rate = 0.06, mbatch = 50, nEpoch = 1000,
+                hidden_p = 400, scale = 1e-3, seed = 12345)
+plot(1:length(out2$error), out2$error, ylim = c(0, 70))
+lines(1:length(out2$error_val), out2$error_val, col = "red")
+
+# Evaluate error on testing data
+test_error = evaluate_error(Xt, Yt, out2$params$W1, out2$params$b1, out2$params$W2, out2$params$b2)
+test_error # 12.511--less error
+
+#Changing hidden_p to 600 and mbatch to 50 error becomes 12.638----------------------------------------
+out2 = NN_train(Xtrain, Ytrain, Xval, Yval, lambda = 0.0005,
+                rate = 0.06, mbatch = 50, nEpoch = 1000,
+                hidden_p = 600, scale = 1e-3, seed = 12345)
+plot(1:length(out2$error), out2$error, ylim = c(0, 70))
+lines(1:length(out2$error_val), out2$error_val, col = "red")
+
+# Evaluate error on testing data
+test_error = evaluate_error(Xt, Yt, out2$params$W1, out2$params$b1, out2$params$W2, out2$params$b2)
+test_error # 12.638--little more error
+
+#Changing rate to 0.01 and mbatch to 60 error becomes 16.211----------------------------------------
+out2 = NN_train(Xtrain, Ytrain, Xval, Yval, lambda = 0.0005,
+                rate = 0.01, mbatch = 60, nEpoch = 1000,
+                hidden_p = 400, scale = 1e-3, seed = 12345)
+plot(1:length(out2$error), out2$error, ylim = c(0, 70))
+lines(1:length(out2$error_val), out2$error_val, col = "red")
+
+# Evaluate error on testing data
+test_error = evaluate_error(Xt, Yt, out2$params$W1, out2$params$b1, out2$params$W2, out2$params$b2)
+test_error # 16.211--much increase
+
+#Changing rate to 0.09 and mbatch to 20 error becomes 12.43----------------------------------------
+out2 = NN_train(Xtrain, Ytrain, Xval, Yval, lambda = 0.0005,
+                rate = 0.09, mbatch = 20, nEpoch = 1000,
+                hidden_p = 400, scale = 1e-3, seed = 12345)
+plot(1:length(out2$error), out2$error, ylim = c(0, 70))
+lines(1:length(out2$error_val), out2$error_val, col = "red")
+
+# Evaluate error on testing data
+test_error = evaluate_error(Xt, Yt, out2$params$W1, out2$params$b1, out2$params$W2, out2$params$b2)
+test_error # 12.43--less error
+
+#Changing nepoch to 500 and mbatch to 50 error becomes 12.40----------------------------------------
+out2 = NN_train(Xtrain, Ytrain, Xval, Yval, lambda = 0.0005,
+                rate = 0.09, mbatch = 50, nEpoch = 500,
+                hidden_p = 400, scale = 1e-3, seed = 12345)
+plot(1:length(out2$error), out2$error, ylim = c(0, 70))
+lines(1:length(out2$error_val), out2$error_val, col = "red")
+
+# Evaluate error on testing data
+test_error = evaluate_error(Xt, Yt, out2$params$W1, out2$params$b1, out2$params$W2, out2$params$b2)
+test_error # 12.40--no improvement
+
+#Changing hidden_p to 1000  error becomes 12.40----------------------------------------
+out2 = NN_train(Xtrain, Ytrain, Xval, Yval, lambda = 0.0005,
+                rate = 0.09, mbatch = 50, nEpoch = 500,
+                hidden_p = 1000, scale = 1e-3, seed = 12345)
+plot(1:length(out2$error), out2$error, ylim = c(0, 70))
+lines(1:length(out2$error_val), out2$error_val, col = "red")
+
+# Evaluate error on testing data
+test_error = evaluate_error(Xt, Yt, out2$params$W1, out2$params$b1, out2$params$W2, out2$params$b2)
+test_error # 12.40--no improvement
+
+#Changing rate to 0.095 and mbatch to 60 error becomes 12.40----------------------------------------
+out2 = NN_train(Xtrain, Ytrain, Xval, Yval, lambda = 0.0005,
+                rate = 0.09, mbatch = 50, nEpoch = 500,
+                hidden_p = 400, scale = 1e-3, seed = 12345)
+plot(1:length(out2$error), out2$error, ylim = c(0, 70))
+lines(1:length(out2$error_val), out2$error_val, col = "red")
+
+# Evaluate error on testing data
+test_error = evaluate_error(Xt, Yt, out2$params$W1, out2$params$b1, out2$params$W2, out2$params$b2)
+test_error # 12.40--no improvement
