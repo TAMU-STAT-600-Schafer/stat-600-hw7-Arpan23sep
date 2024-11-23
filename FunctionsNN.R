@@ -53,7 +53,7 @@ loss_grad_scores <- function(y, scores, K){
   # [ToDo] Calculate gradient of loss with respect to scores (output)
   # when lambda = 0
   # grad = ...
-  grad <- (-Ymat + P_K) / n
+  grad <- (-Ymat + P_K) / n    #Efficient gradient calculation
   
   #exp_scores <- exp(scores)
   #prob <- exp_scores / rowSums(exp_scores)
@@ -80,24 +80,24 @@ one_pass <- function(X, y, K, W1, b1, W2, b2, lambda){
   A1 <- X %*% W1 + matrix(b1, n, h, byrow = T)         #A1 is of dimension n * h
   
   # ReLU
-  H <- pmax(A1, 0)
+  H <- pmax(A1, 0)                  #Defination of RElu function
   # From hidden to output scores
   scores <- H %*% W2 + matrix(b2, n, K, byrow = T)    #score is of dimension n * K
   
   # [ToDo] Backward pass
   # Get loss, error, gradient at current scores using loss_grad_scores function
-  lgs <- loss_grad_scores(y, scores, K)
-  lgs_grad <- lgs$grad 
+  lgs <- loss_grad_scores(y, scores, K)          #Calling loss,grad,score calculation function
+  lgs_grad <- lgs$grad                           #Extracting grad
   
   # Get gradient for 2nd layer W2, b2 (use lambda as needed)
-  dW2 <- crossprod(H, lgs_grad) + lambda * W2 
-  db2 <- colSums(lgs_grad) 
+  dW2 <- crossprod(H, lgs_grad) + lambda * W2        #H * k dimension
+  db2 <- colSums(lgs_grad)                           #length k
   
   # Get gradient for hidden, and 1st layer W1, b1 (use lambda as needed)
-  dH <- tcrossprod(lgs_grad, W2) 
-  dA1 <- dH * (A1 > 0) 
-  dW1 <- crossprod(X, dA1) + lambda * W1 
-  db1 <- colSums(dA1) 
+  dH <- tcrossprod(lgs_grad, W2)                   #n * h matrix
+  dA1 <- dH * (A1 > 0)                             #n * h matrix
+  dW1 <- crossprod(X, dA1) + lambda * W1           #p * h matrix
+  db1 <- colSums(dA1)                              #length h
   # Return output (loss and error from forward pass,
   # list of gradients from backward pass)
   return(list(loss = lgs$loss, error = lgs$error, grads = list(dW1 = dW1, db1 = db1, dW2 = dW2, db2 = db2)))
@@ -118,7 +118,7 @@ evaluate_error <- function(Xval, yval, W1, b1, W2, b2){
   # [ToDo] Forward pass to get scores on validation data
   #First pass from input to hidden
   A1 <- Xval %*% W1 + matrix(b1, nval, length(b1), byrow = T)
-  H <- pmax(A1, 0)
+  H <- pmax(A1, 0)                   #Relu calculation
   
   #Scores calculation
   scores <- H %*% W2 + matrix(b2, nval, length(b2), byrow = T)
